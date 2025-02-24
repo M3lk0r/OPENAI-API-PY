@@ -11,7 +11,7 @@ python -m venv venv
 
 Ativar venv
 
-py .\venv\Scripts\activate
+.\venv\Scripts\activate
 
 Instalar requerimentos do projeto
 

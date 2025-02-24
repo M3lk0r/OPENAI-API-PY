@@ -5,6 +5,11 @@ __pycache__/
 
 *.json
 
+*.yaml
+*.yml
+
+projetos/
+
 # C extensions
 *.so
 
