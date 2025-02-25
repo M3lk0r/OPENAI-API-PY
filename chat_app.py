@@ -227,31 +227,50 @@ class ChatApplication(tk.Tk):
 
         self.after(100, lambda: self.get_response(user_message))
 
-        def display_message(self, sender, message, role):
-            self.chat_area.config(state='normal')
-            if role == "user":
-                self.chat_area.tag_config("user", foreground="blue", font=("Arial", 11, "bold"))
-                self.chat_area.insert(tk.END, f"{sender}: ", "user")
-            elif role == "assistant_loading":
-                self.chat_area.tag_config("assistant_loading", foreground="gray", font=("Arial", 11, "italic"))
-                self.chat_area.insert(tk.END, f"{sender}: ", "assistant_loading")
-            else:
-                self.chat_area.tag_config("assistant", foreground="green", font=("Arial", 11, "italic"))
-                self.chat_area.insert(tk.END, f"{sender}: ", "assistant")
+    def display_message(self, sender, message, role):
+        self.chat_area.config(state='normal')
 
-            if "\n" in message:
-                parts = message.split("\n")
-                for i, part in enumerate(parts):
-                    if i % 2 == 1:
-                        self.chat_area.insert(tk.END, f"\n{part}\n", "code")
-                    else:
-                        self.chat_area.insert(tk.END, part)
-                self.chat_area.tag_config("code", background="#f0f0f0", font=("Courier", 10))
-            else:
-                self.chat_area.insert(tk.END, f"{message}\n")
+        self.chat_area.tag_config("user", foreground="blue", font=("Arial", 11, "bold"))
+        self.chat_area.tag_config("assistant_loading", foreground="gray", font=("Arial", 11, "italic"))
+        self.chat_area.tag_config("assistant", foreground="green", font=("Arial", 11))
+        self.chat_area.tag_config("bold", font=("Arial", 11, "bold"))
+        self.chat_area.tag_config("code", background="#f0f0f0", font=("Courier", 10))
+        self.chat_area.tag_config("header", font=("Arial", 14, "bold"))
 
-            self.chat_area.config(state='disabled')
-            self.chat_area.yview(tk.END)
+        if role == "user":
+            self.chat_area.insert(tk.END, f"{sender}: ", "user")
+        elif role == "assistant_loading":
+            self.chat_area.insert(tk.END, f"{sender}: ", "assistant_loading")
+        else:
+            self.chat_area.insert(tk.END, f"{sender}: ", "assistant")
+
+        lines = message.split("\n")
+        in_code_block = False
+        for line in lines:
+            if line.strip().startswith("```"):
+                in_code_block = not in_code_block
+                if in_code_block:
+                    self.chat_area.insert(tk.END, "\n", "code")
+                continue
+
+            if in_code_block:
+                self.chat_area.insert(tk.END, f"{line}\n", "code")
+            else:
+                if line.startswith("##"):
+                    self.chat_area.insert(tk.END, f"{line[2:].strip()}\n", "header")
+                elif "**" in line:
+                    parts = line.split("**")
+                    for i, part in enumerate(parts):
+                        if i % 2 == 1:
+                            self.chat_area.insert(tk.END, part, "bold")
+                        else:
+                            self.chat_area.insert(tk.END, part)
+                    self.chat_area.insert(tk.END, "\n")
+                else:
+                    self.chat_area.insert(tk.END, f"{line}\n")
+
+        self.chat_area.config(state='disabled')
+        self.chat_area.yview(tk.END)    
 
     def log_conversation(self, role, message):
         if self.log_file:
